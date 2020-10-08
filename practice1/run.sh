@@ -17,3 +17,5 @@ echo "runing..."
 ./a.out "./imgs/img720.jpg" "./img_result/img720_4t.jpg" 4 >> results.txt
 ./a.out "./imgs/img720.jpg" "./img_result/img720_8t.jpg" 8 >> results.txt
 ./a.out "./imgs/img720.jpg" "./img_result/img720_16t.jpg" 16 >> results.txt
+source ./env/bin/activate
+python graphics.py

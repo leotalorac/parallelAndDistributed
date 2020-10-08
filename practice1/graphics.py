@@ -8,9 +8,10 @@ f = open("results.txt", "r")
 lines = f.readlines()
 titles = ["4k","1080","720"]
 t = [1,2,4,8,16]
-t = [1,2,4,8,16]
 onethreadtime = []
 readindex = 0
+speedups = []
+times =[]
 for i in range(3): 
     avg = []
     speedup = [0]
@@ -23,6 +24,8 @@ for i in range(3):
             onethreadtime.append(avgtem)
         else:
             speedup.append(onethreadtime[i]/avgtem)
+    speedups.append(speedup)
+    times.append(avg)
     # graphics time
     fig, ax = plt.subplots()
     ax.plot(t, avg)
@@ -30,7 +33,6 @@ for i in range(3):
         title='time of ' + titles[i])
     ax.grid()
     fig.savefig("./graphics/timesvsthreads-"+titles[i]+".svg")
-    plt.show()
     # graphics speed
     fig, ax = plt.subplots()
     ax.plot(t, speedup)
@@ -38,4 +40,17 @@ for i in range(3):
         title='speedup of ' + titles[i])
     ax.grid()
     fig.savefig("./graphics/speedvsthreads-"+titles[i]+".svg")
-    plt.show()
+# graphics speed
+fig, ax = plt.subplots()
+ax.plot(t, speedups[0],'r-',t,speedups[1],'b-',t,speedups[2],'g-')
+ax.set(xlabel='threads', ylabel='speed up',
+    title='speedup of three resolutions')
+ax.grid()
+fig.savefig("./graphics/speedvsthreads.svg")
+# graphics times
+fig, ax = plt.subplots()
+ax.plot(t, times[0],'r-',t,times[1],'b-',t,times[2],'g-')
+ax.set(xlabel='threads', ylabel='time (ms)',
+    title='times of three resolutions')
+ax.grid()
+fig.savefig("./graphics/timesvsthreads.svg")
