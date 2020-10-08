@@ -7,11 +7,10 @@ using namespace std;
 #define HEIGHT 480
 #define WIDTH 720
 #define CHANNELS 3
-int threads;
 
 Mat originalImg;
 Mat outImg(HEIGHT, WIDTH, CV_8UC3, Scalar(255, 255, 255));
-
+int threads; 
 struct dimension
 {
     int height;
@@ -20,7 +19,7 @@ struct dimension
     float y_ratio;
 } src_dim;
 
-void nndownscale(void *id_thread)
+void *nndownscale(void *arg)
 {
     // define the dimention and downsize of the image
     src_dim.height = originalImg.size().height;
@@ -34,8 +33,13 @@ void nndownscale(void *id_thread)
     uchar *target_row_pointer = nullptr;
 
 
+    int id = *(int *)arg;
+    int n_raws = outImg.size().height / threads;
+    int initial_y = n_raws * id;
+    int end_y = initial_y + n_raws;
+
     // Calculate image
-    for (int i = 0; i < HEIGHT; i++)
+    for (int i = initial_y; i < end_y; i++)
     {
         target_row_pointer = outImg.ptr<uchar>(i);
         for (int j = 0; j < outImg.size().width; j++)
@@ -49,6 +53,7 @@ void nndownscale(void *id_thread)
             }
         }
     }
+    return 0;
 }
 
 //imgsource imgout n_threads
@@ -58,9 +63,20 @@ int main(int argc, char *argv[])
     string src_img = argv[1];
     string out_img = argv[2];
     threads = atoi(argv[3]);
+    originalImg = imread(src_img);
 
-    int *ptr;
-    nndownscale(ptr);
+    int threadId[threads], i, *retval;
+    pthread_t thread[threads];
+
+    for(i = 0; i < threads; i++){
+            threadId[i] = i;
+            pthread_create(&thread[i], NULL, nndownscale, &threadId[i]);
+        }
+
+        for(i = 0; i < threads; i++){
+            pthread_join(thread[i], (void **)&retval);
+        }
+
     imwrite(out_img, outImg);
     return 0;
 }
