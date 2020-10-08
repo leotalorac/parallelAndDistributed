@@ -5,11 +5,14 @@
 using namespace cv;
 using namespace std;
 
+//Constantes
 #define HEIGHT 480
 #define WIDTH 720
 #define CHANNELS 3
 #define ITERATIONS 10
 
+
+//Header utilizado como herramienta para calcular los tiempos
 #ifndef TIMER_H
 #define TIMER_H
 
@@ -25,10 +28,11 @@ get_timestamp ()
 }
 #endif
 
+//Variables Globales
+Mat originalImg; //Imagen de entrada
+Mat outImg(HEIGHT, WIDTH, CV_8UC3); //Imagen de salida de dimensiones 720x480, utilizando 3 canales.
+int threads; // Numero de Hilos
 
-Mat originalImg;
-Mat outImg(HEIGHT, WIDTH, CV_8UC3);
-int threads; 
 struct dimension
 {
     int height;
@@ -39,22 +43,21 @@ struct dimension
 
 void *nndownscale(void *arg)
 {
-    // define the dimention and downsize of the image
+    // Dimensiones de la imagen de entrada
     src_dim.height = originalImg.size().height;
     src_dim.width = originalImg.size().width;
     src_dim.y_ratio = ((float)src_dim.height/HEIGHT);
     src_dim.x_ratio = ((float)src_dim.width/WIDTH);
     // starting settings
-    int row = 0;
-    int col = 0;
+    int row, col = 0;
 
     int id = *(int *)arg;
-    int n = outImg.size().height / threads;
-    int inicio = n * id;
-    int fin = inicio + n;
+    int rows_per_thread = outImg.size().height / threads;
+    int begin = rows_per_thread * id;
+    int end = begin + rows_per_thread;
 
     // Calculate image
-    for (int i = inicio; i < fin; i++)
+    for (int i = begin; i < end; i++)
     {
         for(int j =0; j<outImg.size().width;j++){
             row = ceil(i * src_dim.y_ratio);
@@ -67,36 +70,40 @@ void *nndownscale(void *arg)
     return 0;
 }
 
-//imgsource imgout n_threads
-int main(int argc, char* argv[]) {    
-    //Get the source image path, out path and number of threads
-    string src_img = argv[1];
+
+int main(int argc, char* argv[]) {   
+
+	int threadId[threads], i, *retval;
+    pthread_t thread[threads];
+    timestamp_t start, end ,startUnity, endUnity;
+    double avg, avgUnity;
+ 
+	//Argumentos de entrada
+    string src_img = argv[1];	
     string out_img = argv[2];
     threads = atoi(argv[3]);
+
     originalImg = imread(src_img);
-
-    int threadId[threads], i, *retval;
-    pthread_t thread[threads];
-    timestamp_t start, end;
-    double avg;
-
     start = get_timestamp();
-	timestamp_t startUnity, endUnity;
-    double avgUnity;
-
 
 	printf("Path Imagen: %s \n", src_img.c_str());
 	printf("Numero de Hilos:%d\n", threads);
+
+	//Inicio de Iteraciones
     for(int k = 0; k<ITERATIONS; k++){
+
 		startUnity = get_timestamp();
+		//Creacion de Hilos
     	for(i = 0; i < threads; i++){
             threadId[i] = i;
+			//Llamado al algoritmo con el id del hilo posix
             pthread_create(&thread[i], NULL, nndownscale, &threadId[i]);
         }
 
         for(i = 0; i < threads; i++){
             pthread_join(thread[i], (void **)&retval);
         }
+
 		endUnity = get_timestamp();
         avgUnity = (endUnity - startUnity);
 
