@@ -27,7 +27,7 @@ get_timestamp ()
 
 
 Mat originalImg;
-Mat outImg(HEIGHT, WIDTH, CV_8UC3, Scalar(255, 255, 255));
+Mat outImg(HEIGHT, WIDTH, CV_8UC3);
 int threads; 
 struct dimension
 {
@@ -49,12 +49,12 @@ void *nndownscale(void *arg)
     int col = 0;
 
     int id = *(int *)arg;
-    int n_raws = outImg.size().height / threads;
-    int initial_y = n_raws * id;
-    int end_y = initial_y + n_raws;
+    int n = outImg.size().height / threads;
+    int inicio = n * id;
+    int fin = inicio + n;
 
     // Calculate image
-    for (int i = initial_y; i < end_y; i++)
+    for (int i = inicio; i < fin; i++)
     {
         for(int j =0; j<outImg.size().width;j++){
             row = ceil(i * src_dim.y_ratio);
