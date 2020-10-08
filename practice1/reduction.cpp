@@ -47,9 +47,6 @@ void *nndownscale(void *arg)
     // starting settings
     int row = 0;
     int col = 0;
-    uchar *source_row_pointer = nullptr;
-    uchar *target_row_pointer = nullptr;
-
 
     int id = *(int *)arg;
     int n_raws = outImg.size().height / threads;
@@ -59,13 +56,11 @@ void *nndownscale(void *arg)
     // Calculate image
     for (int i = initial_y; i < end_y; i++)
     {
-        target_row_pointer = outImg.ptr<uchar>(i);
         for(int j =0; j<outImg.size().width;j++){
             row = ceil(i * src_dim.y_ratio);
             col = ceil(j * src_dim.x_ratio);
-            source_row_pointer = originalImg.ptr<uchar>(row);
             for(int c =0 ; c<CHANNELS;c++){
-                target_row_pointer[j * CHANNELS + c] = source_row_pointer[col * CHANNELS + c];
+				outImg.at<uchar>(i,j * CHANNELS + c) = originalImg.at<uchar>(row,col * CHANNELS + c); 
             }
         }
     }
@@ -112,7 +107,6 @@ int main(int argc, char* argv[]) {
     avg = (end - start)/(double)ITERATIONS;
 
     printf("%f\n", avg/(double)1000);
-	printf("-\n");
     imwrite(out_img, outImg);
     return 0;
 }
