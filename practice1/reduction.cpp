@@ -9,17 +9,18 @@ using namespace std;
 #define CHANNELS 3
 
 Mat originalImg;
-Mat outImg(HEIGHT, WIDTH, CV_8UC3, Scalar(255, 255, 255)); 
-
-struct dimension {
-  int height;
-  int width;
-  float x_ratio;
-  float y_ratio;
+Mat outImg(HEIGHT, WIDTH, CV_8UC3, Scalar(255, 255, 255));
+int threads; 
+struct dimension
+{
+    int height;
+    int width;
+    float x_ratio;
+    float y_ratio;
 } src_dim;
 
-
-void nndownscale(int *id_thread){
+void *nndownscale(void *arg)
+{
     // define the dimention and downsize of the image
     src_dim.height = originalImg.size().height;
     src_dim.width = originalImg.size().width;
@@ -31,8 +32,14 @@ void nndownscale(int *id_thread){
     uchar *source_row_pointer = nullptr;
     uchar *target_row_pointer = nullptr;
 
-    // get thread data
-    for (int i =0; i <outImg.size().height; i++)
+
+    int id = *(int *)arg;
+    int n_raws = outImg.size().height / threads;
+    int initial_y = n_raws * id;
+    int end_y = initial_y + n_raws;
+
+    // Calculate image
+    for (int i = initial_y; i < end_y; i++)
     {
         target_row_pointer = outImg.ptr<uchar>(i);
         for(int j =0; j<outImg.size().width;j++){
@@ -44,6 +51,8 @@ void nndownscale(int *id_thread){
             }
         }
     }
+    return 0;
+}
 
 
 
@@ -55,17 +64,21 @@ int main(int argc, char* argv[]) {
     //Get the source image path, out path and number of threads
     string src_img = argv[1];
     string out_img = argv[2];
-    int threads = atoi(argv[3]);
-
-    // Read the image 
+    threads = atoi(argv[3]);
     originalImg = imread(src_img);
-    // if image not exist
-    if(originalImg.empty()) {
-        cout << "The image doesn't exist";
-        return 1;
-    }
-    int *ptr;
-    nndownscale(ptr);
+
+    int threadId[threads], i, *retval;
+    pthread_t thread[threads];
+
+    for(i = 0; i < threads; i++){
+            threadId[i] = i;
+            pthread_create(&thread[i], NULL, nndownscale, &threadId[i]);
+        }
+
+        for(i = 0; i < threads; i++){
+            pthread_join(thread[i], (void **)&retval);
+        }
+
     imwrite(out_img, outImg);
     return 0;
 }
