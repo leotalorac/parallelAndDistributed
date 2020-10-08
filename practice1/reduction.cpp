@@ -54,11 +54,6 @@ void *nndownscale(void *arg)
     return 0;
 }
 
-
-
-}   
-
-
 //imgsource imgout n_threads
 int main(int argc, char* argv[]) {    
     //Get the source image path, out path and number of threads
