@@ -1,5 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <bits/stdc++.h>
+#include <sys/time.h>
 
 using namespace cv;
 using namespace std;
@@ -7,6 +8,22 @@ using namespace std;
 #define HEIGHT 480
 #define WIDTH 720
 #define CHANNELS 3
+
+#ifndef TIMER_H
+#define TIMER_H
+
+typedef unsigned long long timestamp_t;
+
+static timestamp_t
+
+get_timestamp ()
+{
+  struct timeval now;
+  gettimeofday (&now, NULL);
+  return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
+}
+#endif
+
 
 Mat originalImg;
 Mat outImg(HEIGHT, WIDTH, CV_8UC3, Scalar(255, 255, 255));
@@ -64,7 +81,10 @@ int main(int argc, char* argv[]) {
 
     int threadId[threads], i, *retval;
     pthread_t thread[threads];
+    timestamp_t start, end;
+    double avg;
 
+    start = get_timestamp();
     for(i = 0; i < threads; i++){
             threadId[i] = i;
             pthread_create(&thread[i], NULL, nndownscale, &threadId[i]);
@@ -73,7 +93,10 @@ int main(int argc, char* argv[]) {
         for(i = 0; i < threads; i++){
             pthread_join(thread[i], (void **)&retval);
         }
+    end = get_timestamp();
+    avg = (end - start);
 
+    printf("Time Elapsed: %f\n", avg/(double)1000);
     imwrite(out_img, outImg);
     return 0;
 }
