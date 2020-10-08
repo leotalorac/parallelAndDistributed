@@ -8,6 +8,7 @@ using namespace std;
 #define HEIGHT 480
 #define WIDTH 720
 #define CHANNELS 3
+#define ITERATIONS 10
 
 #ifndef TIMER_H
 #define TIMER_H
@@ -85,7 +86,15 @@ int main(int argc, char* argv[]) {
     double avg;
 
     start = get_timestamp();
-    for(i = 0; i < threads; i++){
+	timestamp_t startUnity, endUnity;
+    double avgUnity;
+
+
+	printf("Path Imagen: %s \n", src_img.c_str());
+	printf("Numero de Hilos:%d\n", threads);
+    for(int k = 0; k<ITERATIONS; k++){
+		startUnity = get_timestamp();
+    	for(i = 0; i < threads; i++){
             threadId[i] = i;
             pthread_create(&thread[i], NULL, nndownscale, &threadId[i]);
         }
@@ -93,10 +102,17 @@ int main(int argc, char* argv[]) {
         for(i = 0; i < threads; i++){
             pthread_join(thread[i], (void **)&retval);
         }
-    end = get_timestamp();
-    avg = (end - start);
+		endUnity = get_timestamp();
+        avgUnity = (endUnity - startUnity);
 
-    printf("Time Elapsed: %f\n", avg/(double)1000);
+		printf("%f\n",avgUnity/(double)1000);
+     }
+
+    end = get_timestamp();
+    avg = (end - start)/(double)ITERATIONS;
+
+    printf("%f\n", avg/(double)1000);
+	printf("-\n");
     imwrite(out_img, outImg);
     return 0;
 }
