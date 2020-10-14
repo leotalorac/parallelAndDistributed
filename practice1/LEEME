@@ -1,0 +1,19 @@
+AUTORES:
+LUIS EDUARDO OTALORA CUBIDES
+JUAN CAMILO GOMEZ LOPEZ
+
+OBSERVACIONES:
+
+* Hacemos uso de Python (Numpy, Matplotlib) para la generación automatica de las graficas en el "archivo script_ejecutar_todo.sh" por lo tanto eliminar la ultima linea si no se generarlas.
+
+* Los tiempos no se mostraran por consola, quedaran almacenados en un archivo llamado "results.txt"
+
+* Los tiempos estan en milisegundos	
+
+* Si se desea ejecutar el programa sin usar el script, usar los siguientes comandos, ingresando 3 argumentos:
+
+	g++ reduction.cpp -std=c++11 `pkg-config --cflags --libs opencv` -lpthread
+	./a.out path_image_src path_image_out num_threads
+
+
+
