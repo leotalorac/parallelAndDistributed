@@ -21,4 +21,4 @@ echo "runing..."
 ./a.out "./imgs/img720.jpg" "./img_result/img720_8t.jpg" 12 >> results.txt
 ./a.out "./imgs/img720.jpg" "./img_result/img720_16t.jpg" 16 >> results.txt
 source ./env/bin/activate
-python graphics.py
+python3 graphics.py

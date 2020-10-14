@@ -3,3 +3,7 @@
 ./.vscode/settings.json
 
 results.txt
+
+/practice1/img_result/*.jpg
+/practice1/graphics/*
+!/practice1/graphics/.gitkeep 
