@@ -7,3 +7,7 @@ results.txt
 /practice1/img_result/*.jpg
 /practice1/graphics/*
 !/practice1/graphics/.gitkeep 
+
+/practice1_openmp/img_result/*.jpg
+/practice1_openmp/graphics/*
+!/practice1_openmp/graphics/.gitkeep 
