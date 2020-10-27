@@ -55,6 +55,7 @@ fig, ax = plt.subplots()
 ax.plot(t, times[0],'r-',label="4k")
 ax.plot(t,times[1],'b-',label="1080p")
 ax.plot(t,times[2],'g-',label="720p")
+ax.legend()
 ax.set(xlabel='threads', ylabel='time (ms)',
     title='times of three resolutions')
 ax.grid()
