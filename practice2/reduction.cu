@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(width_output / threadsPerBlock.x, height_output / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
-            nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, channels_input, width_output, height_output, channels_output);
+            nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, CHANNELS, width_output, height_output, CHANNELS);
     }
     end_a = get_timestamp();
     cudaEventRecord(end, NULL);
