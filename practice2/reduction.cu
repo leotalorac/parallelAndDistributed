@@ -107,9 +107,9 @@ int main(int argc, char* argv[]) {
     printf("%f\n",avg/(double)1000);
     float msecTotal = 0.0f;
     cudaEventElapsedTime(&msecTotal, start, end);
-    float secPerMatrixMul = msecTotal / (ITERATIONS * 1000.0f);
+    float secPerMatrixMul = msecTotal / (ITERATIONS * 1.0f);
     printf(
-        "Time= %.8f s",
+        "Time= %.8f ms",
         secPerMatrixMul
     );
 
