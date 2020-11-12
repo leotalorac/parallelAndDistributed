@@ -66,6 +66,7 @@ int main(int argc, char* argv[]) {
     const string source_image_path = argv[1];
     const string result_image_path = argv[2];
     const int threads = atoi(argv[3]);
+    const int numBlocks = atoi(argv[4]);
 
 
     Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3, Scalar(255, 255, 255)); 
@@ -90,12 +91,10 @@ int main(int argc, char* argv[]) {
     int height_output = output_image.rows;
     int channels_output = output_image.channels();
 
-    const dim3 threadsPerBlock(threads, threads);
-    const dim3 numBlocks(width_output / threadsPerBlock.x, height_output / threadsPerBlock.y);
 
     start = get_timestamp();
     for(int i = 0; i < ITERATIONS; i++){
-            nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, channels_input, width_output, height_output, channels_output);
+            nearest_neighbour_scaling<<<numBlocks, threads>>>(d_input, d_output, width_input, height_input, channels_input, width_output, height_output, channels_output);
     }
     end = get_timestamp();
     avg = (end - start);
