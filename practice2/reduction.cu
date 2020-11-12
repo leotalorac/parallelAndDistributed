@@ -13,6 +13,21 @@ using namespace std;
 #define RESULT_HEIGHT 480
 #define ITERATIONS 20
 
+//function to get time
+#ifndef TIMER_H
+#define TIMER_H
+
+typedef unsigned long long timestamp_t;
+
+static timestamp_t
+
+get_timestamp ()
+{
+  struct timeval now;
+  gettimeofday (&now, NULL);
+  return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
+}
+#endif
 
 
 
@@ -55,6 +70,8 @@ int main(int argc, char* argv[]) {
 
     Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3, Scalar(255, 255, 255)); 
     Mat input_image = imread(source_image_path);
+    timestamp_t start, end;
+    double avg;
     
     
     const int input_bytes = input_image.cols * input_image.rows * input_image.channels() * sizeof(unsigned char);
@@ -76,10 +93,13 @@ int main(int argc, char* argv[]) {
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(width_output / threadsPerBlock.x, height_output / threadsPerBlock.y);
 
+    start = get_timestamp();
     for(int i = 0; i < ITERATIONS; i++){
             nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, channels_input, width_output, height_output, channels_output);
     }
-
+    end = get_timestamp();
+    avg = (end - start);
+    printf("%f\n",avg/(double)1000);
   
     cudaMemcpy(output_image.ptr(), d_output, output_bytes, cudaMemcpyDeviceToHost);
 
