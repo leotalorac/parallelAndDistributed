@@ -58,26 +58,18 @@ __global__ void nearest_neighbour_scaling(
  * Host main routine
  */
 int main(int argc, char* argv[]) {
-    // Read parameters 1- source path, 2- Destination path, 3-threads, 4- algorithm
-    if (argc != 4) {
-        printf("Arguments are not complete. Usage: image_path image_result_path n_threads algorithm.\n");
-        exit(EXIT_FAILURE);
-    }
+    
     const string source_image_path = argv[1];
     const string result_image_path = argv[2];
     const int threads = atoi(argv[3]);
 
-    // time measurement variables
     cudaEvent_t start, end;
 
     // Create result image of 720x480 pixels with 3 channels
     Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3, Scalar(255, 255, 255)); 
     // Read the image from the given source path
     Mat input_image = imread(source_image_path);
-    if(input_image.empty()) {
-        printf("Error reading image.");
-        exit(EXIT_FAILURE);
-    }
+    
     
     // Matrices sizes width * height * 3
     const int input_bytes = input_image.cols * input_image.rows * input_image.channels() * sizeof(unsigned char);
@@ -115,7 +107,6 @@ int main(int argc, char* argv[]) {
     // Run kernel several times to measure an average time.
     for(int i = 0; i < ITERATIONS; i++){
             nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, channels_input, width_output, height_output, channels_output);
-        SAFE_CALL(cudaGetLastError(), "Failed to launch kernel");
     }
 
     // Record the stop event
