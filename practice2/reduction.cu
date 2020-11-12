@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
     cudaEventRecord(start, NULL);
     start_a = get_timestamp();
     for(int i = 0; i < ITERATIONS; i++){
-            nearest_neighbour_scaling<<<numBlocks, threads>>>(d_input, d_output, width_input, height_input, channels_input, width_output, height_output, channels_output);
+            nearest_neighbour_scaling<<<numBlocks, threads/numBlocks>>>(d_input, d_output, width_input, height_input, channels_input, width_output, height_output, channels_output);
     }
     end_a = get_timestamp();
     cudaEventRecord(end, NULL);
