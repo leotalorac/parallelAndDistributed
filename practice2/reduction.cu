@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
 
     Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3, Scalar(255, 255, 255)); 
     Mat input_image = imread(source_image_path);
-    timestamp_t start, end;
+    timestamp_t start_a, end_a;
     double avg;
     
     cudaEvent_t start, end;
@@ -96,14 +96,14 @@ int main(int argc, char* argv[]) {
     int channels_output = output_image.channels();
 
     cudaEventRecord(start, NULL);
-    start = get_timestamp();
+    start_a = get_timestamp();
     for(int i = 0; i < ITERATIONS; i++){
             nearest_neighbour_scaling<<<numBlocks, threads>>>(d_input, d_output, width_input, height_input, channels_input, width_output, height_output, channels_output);
     }
-    end = get_timestamp();
+    end_a = get_timestamp();
     cudaEventRecord(end, NULL);
     cudaEventSynchronize(end);
-    avg = (end - start);
+    avg = (end_a - start_a);
     printf("%f\n",avg/(double)1000);
     float msecTotal = 0.0f;
     cudaEventElapsedTime(&msecTotal, start, end);
