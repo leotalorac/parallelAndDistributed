@@ -59,7 +59,7 @@ __global__ void nearest_neighbour_scaling(
  */
 int main(int argc, char* argv[]) {
     // Read parameters 1- source path, 2- Destination path, 3-threads, 4- algorithm
-    if (argc != 5) {
+    if (argc != 4) {
         printf("Arguments are not complete. Usage: image_path image_result_path n_threads algorithm.\n");
         exit(EXIT_FAILURE);
     }
