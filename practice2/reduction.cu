@@ -9,8 +9,8 @@
 using namespace cv;
 using namespace std;
 
-#define RESULT_WIDTH 720
-#define RESULT_HEIGHT 480
+#define WIDTH 720
+#define HEIGHT 480
 #define CHANNELS 3
 #define ITERATIONS 20
 
@@ -37,10 +37,9 @@ __global__ void nearest_neighbour_scaling(
     unsigned char *output_image,
     int width_input, 
     int height_input,
-    int channels_input,
     int width_output, 
     int height_output,
-    int channels_output) {
+    int channels) {
     const float x_ratio = (width_input + 0.0) / width_output;
     const float y_ratio = (height_input + 0.0) / height_output;
 
@@ -48,14 +47,14 @@ __global__ void nearest_neighbour_scaling(
     const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 
     int px = 0, py = 0; 
-    const int input_width_step = width_input * channels_input;
-    const int output_width_step = width_output * channels_output;
+    const int input_width_step = width_input * channels;
+    const int output_width_step = width_output * channels;
 
     if ((xIndex < width_output) && (yIndex < height_output)){
         py = ceil(yIndex * y_ratio);
         px = ceil(xIndex * x_ratio);
-        for (int channel = 0; channel < CHANNELS; channel++){
-            *(output_image + (yIndex * output_width_step + xIndex * channels_output + channel)) =  *(input_image + (py * input_width_step + px * channels_input + channel));
+        for (int channel = 0; channel < channels; channel++){
+            *(output_image + (yIndex * output_width_step + xIndex * channels + channels)) =  *(input_image + (py * input_width_step + px * channels + channels));
         }
     }
 }
@@ -69,7 +68,7 @@ int main(int argc, char* argv[]) {
     const int threads = atoi(argv[3]);
 
 
-    Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3); 
+    Mat output_image(HEIGHT, WIDTH, CV_8UC3); 
     Mat input_image = imread(source_image_path);
     timestamp_t start_a, end_a;
     double avg;
@@ -100,7 +99,7 @@ int main(int argc, char* argv[]) {
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(width_output / threadsPerBlock.x, height_output / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
-            nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, CHANNELS, width_output, height_output, CHANNELS);
+            nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, width_output, height_output, CHANNELS);
     }
     end_a = get_timestamp();
     cudaEventRecord(end, NULL);
