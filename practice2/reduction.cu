@@ -38,8 +38,7 @@ __global__ void nearest_neighbour_scaling(
     int width_input, 
     int height_input,
     int width_output, 
-    int height_output,
-    int channels) {
+    int height_output) {
     const float x_ratio = (width_input + 0.0) / width_output;
     const float y_ratio = (height_input + 0.0) / height_output;
 
@@ -47,14 +46,14 @@ __global__ void nearest_neighbour_scaling(
     const int yIndex = blockIdx.x * blockDim.x + threadIdx.x;
 
     int px = 0, py = 0; 
-    const int input_width_step = width_input * channels;
-    const int output_width_step = width_output * channels;
+    const int input_width_step = width_input * CHANNELS;
+    const int output_width_step = width_output * CHANNELS;
 
     if ((xIndex < width_output) && (yIndex < height_output)){
         py = ceil(yIndex * y_ratio);
         px = ceil(xIndex * x_ratio);
-        for (int channel = 0; channel < channels; channel++){
-            *(output_image + (yIndex * output_width_step + xIndex * channels + channel)) =  *(input_image + (py * input_width_step + px * channels + channel));
+        for (int channel = 0; channel < CHANNELS; channel++){
+            *(output_image + (yIndex * output_width_step + xIndex * CHANNELS + channel)) =  *(input_image + (py * input_width_step + px * CHANNELS + channel));
         }
     }
 }
@@ -99,7 +98,7 @@ int main(int argc, char* argv[]) {
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(width_output / threadsPerBlock.x, height_output / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
-            nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, width_output, height_output, CHANNELS);
+            nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, width_output, height_output);
     }
     end_a = get_timestamp();
     cudaEventRecord(end, NULL);
