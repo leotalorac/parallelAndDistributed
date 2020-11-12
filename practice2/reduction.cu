@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
     SAFE_CALL(cudaEventRecord(end, NULL), "Failed to record end event.");
 
     // Wait for the stop event to complete
-    SAFE_CALL(cudaEventSynchronize(end), "Failed to synchronize on the end event");
+    // SAFE_CALL(cudaEventSynchronize(end), "Failed to synchronize on the end event");
 
     float msecTotal = 0.0f;
     SAFE_CALL(cudaEventElapsedTime(&msecTotal, start, end), "Failed to get time elapsed between events");
