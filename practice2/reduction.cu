@@ -110,8 +110,7 @@ int main(int argc, char* argv[]) {
     float secPerMatrixMul = msecTotal / (ITERATIONS * 1000.0f);
     printf(
         "Time= %.8f s",
-        secPerMatrixMul,
-   
+        secPerMatrixMul
     );
 
   
