@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
     timestamp_t start, end;
     double avg;
     
+    cudaEvent_t start, end;
     
     const int input_bytes = input_image.cols * input_image.rows * input_image.channels() * sizeof(unsigned char);
     const int output_bytes = output_image.cols * output_image.rows * output_image.channels() * sizeof(unsigned char);
@@ -83,7 +84,10 @@ int main(int argc, char* argv[]) {
     cudaMalloc<unsigned char>(&d_output, output_bytes);
 
     cudaMemcpy(d_input, input_image.ptr(), input_bytes, cudaMemcpyHostToDevice);
+    cudaEventCreate(&start);
+    cudaEventCreate(&end);
 
+    
     int width_input = input_image.cols;
     int height_input = input_image.rows;
     int channels_input = input_image.channels();
@@ -91,14 +95,25 @@ int main(int argc, char* argv[]) {
     int height_output = output_image.rows;
     int channels_output = output_image.channels();
 
-
+    cudaEventRecord(start, NULL);
     start = get_timestamp();
     for(int i = 0; i < ITERATIONS; i++){
             nearest_neighbour_scaling<<<numBlocks, threads>>>(d_input, d_output, width_input, height_input, channels_input, width_output, height_output, channels_output);
     }
     end = get_timestamp();
+    cudaEventRecord(end, NULL);
+    cudaEventSynchronize(end);
     avg = (end - start);
     printf("%f\n",avg/(double)1000);
+    float msecTotal = 0.0f;
+    cudaEventElapsedTime(&msecTotal, start, end);
+    float secPerMatrixMul = msecTotal / (ITERATIONS * 1000.0f);
+    printf(
+        "Time= %.8f s",
+        secPerMatrixMul,
+   
+    );
+
   
     cudaMemcpy(output_image.ptr(), d_output, output_bytes, cudaMemcpyDeviceToHost);
 
