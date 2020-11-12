@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
     SAFE_CALL(cudaEventCreate(&end), "Failed to create end event");
 
     // Record the start event
-    SAFE_CALL(cudaEventRecord(start, NULL), "Failed to start rescor of start event");
+    // SAFE_CALL(cudaEventRecord(start, NULL), "Failed to start rescor of start event");
     
     int width_input = input_image.cols;
     int height_input = input_image.rows;
@@ -110,26 +110,26 @@ int main(int argc, char* argv[]) {
     }
 
     // Record the stop event
-    SAFE_CALL(cudaEventRecord(end, NULL), "Failed to record end event.");
+    // SAFE_CALL(cudaEventRecord(end, NULL), "Failed to record end event.");
 
     // Wait for the stop event to complete
     // SAFE_CALL(cudaEventSynchronize(end), "Failed to synchronize on the end event");
 
     float msecTotal = 0.0f;
-    SAFE_CALL(cudaEventElapsedTime(&msecTotal, start, end), "Failed to get time elapsed between events");
+    // SAFE_CALL(cudaEventElapsedTime(&msecTotal, start, end), "Failed to get time elapsed between events");
 
     // Compute and print the performance
-    float secPerMatrixMul = msecTotal / (ITERATIONS * 1000.0f);
-    double flopsPerMatrixMul = 2.0 * (double)width_output * (double)height_output * channels_output;
-    double gigaFlops = (flopsPerMatrixMul * 1.0e-9f) / (secPerMatrixMul / 1000.0f);
-    printf(
-        "Performance= %.2f GFlop/s, Time= %.8f s, Size= %.0f Ops, WorkgroupSize= %u threads/block, Blocks= %u\n",
-        gigaFlops,
-        secPerMatrixMul,
-        flopsPerMatrixMul,
-        threadsPerBlock.x * threadsPerBlock.y,
-        numBlocks.x * numBlocks.y
-    );
+    // float secPerMatrixMul = msecTotal / (ITERATIONS * 1000.0f);
+    // double flopsPerMatrixMul = 2.0 * (double)width_output * (double)height_output * channels_output;
+    // double gigaFlops = (flopsPerMatrixMul * 1.0e-9f) / (secPerMatrixMul / 1000.0f);
+    // printf(
+    //     "Performance= %.2f GFlop/s, Time= %.8f s, Size= %.0f Ops, WorkgroupSize= %u threads/block, Blocks= %u\n",
+    //     gigaFlops,
+    //     secPerMatrixMul,
+    //     flopsPerMatrixMul,
+    //     threadsPerBlock.x * threadsPerBlock.y,
+    //     numBlocks.x * numBlocks.y
+    // );
 
     // Copy the device output image in device memory to the host output image in host memory.
     SAFE_CALL(cudaMemcpy(output_image.ptr(), d_output, output_bytes, cudaMemcpyDeviceToHost), "Failed to copy output image from device to host");
