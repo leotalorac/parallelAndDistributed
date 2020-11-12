@@ -13,15 +13,7 @@ using namespace std;
 #define RESULT_HEIGHT 480
 #define ITERATIONS 20
 
-// Function taken from https://github.com/sshniro/opencv-samples/blob/master/cuda-bgr-grey.cpp
-static inline void _safe_cuda_call(cudaError err, const char* msg, const char* file_name, const int line_number) {
-	if (err != cudaSuccess) {
-		fprintf(stderr, "%s\n\nFile: %s\n\nLine Number: %d\n\nReason: %s\n", msg, file_name, line_number, cudaGetErrorString(err));
-		exit(EXIT_FAILURE);
-	}
-}
 
-#define SAFE_CALL(call,msg) _safe_cuda_call((call),(msg),__FILE__,__LINE__)
 
 
 __global__ void nearest_neighbour_scaling(
@@ -63,7 +55,6 @@ int main(int argc, char* argv[]) {
     const string result_image_path = argv[2];
     const int threads = atoi(argv[3]);
 
-    cudaEvent_t start, end;
 
     // Create result image of 720x480 pixels with 3 channels
     Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3, Scalar(255, 255, 255)); 
@@ -77,22 +68,13 @@ int main(int argc, char* argv[]) {
 
     unsigned char *d_input, *d_output;
     // Allocate the device input image
-    SAFE_CALL(cudaMalloc<unsigned char>(&d_input, input_bytes), "Failed to allocate device input image.");
+    cudaMalloc<unsigned char>(&d_input, input_bytes);
     // Allocate the device output image
-    SAFE_CALL(cudaMalloc<unsigned char>(&d_output, output_bytes), "Failed to allocate device output image.");
+    cudaMalloc<unsigned char>(&d_output, output_bytes);
 
     // Copy the host input image in host memory to the device input image in device memory
-    SAFE_CALL(cudaMemcpy(d_input, input_image.ptr(), input_bytes, cudaMemcpyHostToDevice), "Failed to copy input image from host to device");
+    cudaMemcpy(d_input, input_image.ptr(), input_bytes, cudaMemcpyHostToDevice);
 
-    // Create event to measure start time
-    SAFE_CALL(cudaEventCreate(&start), "Failed to create start event.");
-
-    // Create event to measure end time
-    SAFE_CALL(cudaEventCreate(&end), "Failed to create end event");
-
-    // Record the start event
-    // SAFE_CALL(cudaEventRecord(start, NULL), "Failed to start rescor of start event");
-    
     int width_input = input_image.cols;
     int height_input = input_image.rows;
     int channels_input = input_image.channels();
@@ -132,14 +114,14 @@ int main(int argc, char* argv[]) {
     // );
 
     // Copy the device output image in device memory to the host output image in host memory.
-    SAFE_CALL(cudaMemcpy(output_image.ptr(), d_output, output_bytes, cudaMemcpyDeviceToHost), "Failed to copy output image from device to host");
+    cudaMemcpy(output_image.ptr(), d_output, output_bytes, cudaMemcpyDeviceToHost);
 
     // Write the image to a file
     imwrite(result_image_path, output_image);
 
     // Free device global memory
-    SAFE_CALL(cudaFree(d_input), "Failed to free device input image");
-    SAFE_CALL(cudaFree(d_output), "Failed to free device output image");
+    cudaFree(d_input);
+    cudaFree(d_output);
 
     printf("Done\n");
     return 0;
