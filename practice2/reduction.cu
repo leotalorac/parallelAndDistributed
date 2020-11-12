@@ -28,7 +28,6 @@ __global__ void nearest_neighbour_scaling(
     const float x_ratio = (width_input + 0.0) / width_output;
     const float y_ratio = (height_input + 0.0) / height_output;
 
-    //2D Index of current thread
 	const int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
     const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -46,9 +45,7 @@ __global__ void nearest_neighbour_scaling(
 }
 
 
-/**
- * Host main routine
- */
+
 int main(int argc, char* argv[]) {
     
     const string source_image_path = argv[1];
@@ -56,23 +53,17 @@ int main(int argc, char* argv[]) {
     const int threads = atoi(argv[3]);
 
 
-    // Create result image of 720x480 pixels with 3 channels
     Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3, Scalar(255, 255, 255)); 
-    // Read the image from the given source path
     Mat input_image = imread(source_image_path);
     
     
-    // Matrices sizes width * height * 3
     const int input_bytes = input_image.cols * input_image.rows * input_image.channels() * sizeof(unsigned char);
     const int output_bytes = output_image.cols * output_image.rows * output_image.channels() * sizeof(unsigned char);
 
     unsigned char *d_input, *d_output;
-    // Allocate the device input image
     cudaMalloc<unsigned char>(&d_input, input_bytes);
-    // Allocate the device output image
     cudaMalloc<unsigned char>(&d_output, output_bytes);
 
-    // Copy the host input image in host memory to the device input image in device memory
     cudaMemcpy(d_input, input_image.ptr(), input_bytes, cudaMemcpyHostToDevice);
 
     int width_input = input_image.cols;
@@ -83,43 +74,17 @@ int main(int argc, char* argv[]) {
     int channels_output = output_image.channels();
 
     const dim3 threadsPerBlock(threads, threads);
-    //Calculate numBlocks size to cover the whole image        
     const dim3 numBlocks(width_output / threadsPerBlock.x, height_output / threadsPerBlock.y);
 
-    // Run kernel several times to measure an average time.
     for(int i = 0; i < ITERATIONS; i++){
             nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, channels_input, width_output, height_output, channels_output);
     }
 
-    // Record the stop event
-    // SAFE_CALL(cudaEventRecord(end, NULL), "Failed to record end event.");
-
-    // Wait for the stop event to complete
-    // SAFE_CALL(cudaEventSynchronize(end), "Failed to synchronize on the end event");
-
-    float msecTotal = 0.0f;
-    // SAFE_CALL(cudaEventElapsedTime(&msecTotal, start, end), "Failed to get time elapsed between events");
-
-    // Compute and print the performance
-    // float secPerMatrixMul = msecTotal / (ITERATIONS * 1000.0f);
-    // double flopsPerMatrixMul = 2.0 * (double)width_output * (double)height_output * channels_output;
-    // double gigaFlops = (flopsPerMatrixMul * 1.0e-9f) / (secPerMatrixMul / 1000.0f);
-    // printf(
-    //     "Performance= %.2f GFlop/s, Time= %.8f s, Size= %.0f Ops, WorkgroupSize= %u threads/block, Blocks= %u\n",
-    //     gigaFlops,
-    //     secPerMatrixMul,
-    //     flopsPerMatrixMul,
-    //     threadsPerBlock.x * threadsPerBlock.y,
-    //     numBlocks.x * numBlocks.y
-    // );
-
-    // Copy the device output image in device memory to the host output image in host memory.
+  
     cudaMemcpy(output_image.ptr(), d_output, output_bytes, cudaMemcpyDeviceToHost);
 
-    // Write the image to a file
     imwrite(result_image_path, output_image);
 
-    // Free device global memory
     cudaFree(d_input);
     cudaFree(d_output);
 
