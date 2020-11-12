@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
     const int threads = atoi(argv[3]);
 
 
-    Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3, Scalar(255, 255, 255)); 
+    Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3); 
     Mat input_image = imread(source_image_path);
     timestamp_t start_a, end_a;
     double avg;
