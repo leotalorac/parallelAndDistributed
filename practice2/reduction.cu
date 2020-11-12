@@ -11,6 +11,7 @@ using namespace std;
 
 #define RESULT_WIDTH 720
 #define RESULT_HEIGHT 480
+#define CHANNELS 3
 #define ITERATIONS 20
 
 //function to get time
@@ -53,7 +54,7 @@ __global__ void nearest_neighbour_scaling(
     if ((xIndex < width_output) && (yIndex < height_output)){
         py = ceil(yIndex * y_ratio);
         px = ceil(xIndex * x_ratio);
-        for (int channel = 0; channel < channels_output; channel++){
+        for (int channel = 0; channel < CHANNELS; channel++){
             *(output_image + (yIndex * output_width_step + xIndex * channels_output + channel)) =  *(input_image + (py * input_width_step + px * channels_input + channel));
         }
     }
