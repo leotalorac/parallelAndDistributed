@@ -43,7 +43,7 @@ __global__ void nearest_neighbour_scaling(
     const float y_ratio = (height_input + 0.0) / height_output;
 
 	const int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
-    const int yIndex = blockIdx.x * blockDim.x + threadIdx.x;
+    const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 
     int px = 0, py = 0; 
     const int input_width_step = width_input * CHANNELS;
