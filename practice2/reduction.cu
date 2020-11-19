@@ -65,24 +65,29 @@ __global__ void nearest_neighbour_scaling(
 
 int main(int argc, char* argv[]) {
     
+    /*Parameter inputs: Source, Out and number of threads*/
     const string src = argv[1];
     const string dst = argv[2];
     const int threads = atoi(argv[3]);
 
     input_image = imread(src);
+
+    /*Allocate Space*/
     const int size_input = sizeof(unsigned char) * input_image.cols * input_image.rows * CHANNELS; 
     const int size_output = sizeof(unsigned char) *output_image.cols * output_image.rows * CHANNELS;
+    unsigned char *input_image_pointer, *output_image_pointer;
+
+    cudaMalloc<unsigned char>(&input_image_pointer, size_input);
+    cudaMalloc<unsigned char>(&output_image_pointer, size_output);
+    cudaMemcpy(input_image_pointer, input_image.ptr(), size_input, cudaMemcpyHostToDevice);
+
+    /*Time Recording*/
     cudaEvent_t start, end;
     cudaEventCreate(&start);
     cudaEventCreate(&end);
-
-    unsigned char *input_image_pointer, *output_image_pointer;
-    cudaMalloc<unsigned char>(&input_image_pointer, size_input);
-    cudaMalloc<unsigned char>(&output_image_pointer, size_output);
-
-    cudaMemcpy(input_image_pointer, input_image.ptr(), size_input, cudaMemcpyHostToDevice);
-   
     cudaEventRecord(start, NULL);
+
+   
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(output_image.cols / threadsPerBlock.x, output_image.rows / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
