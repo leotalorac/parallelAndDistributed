@@ -73,29 +73,22 @@ int main(int argc, char* argv[]) {
     const int size_input = sizeof(unsigned char) * input_image.cols * input_image.rows * CHANNELS; 
     const int size_output = sizeof(unsigned char) *output_image.cols * output_image.rows * CHANNELS;
     cudaEvent_t start, end;
-
-    unsigned char *d_input, *d_output;
-    cudaMalloc<unsigned char>(&d_input, size_input);
-    cudaMalloc<unsigned char>(&d_output, size_output);
-
-    cudaMemcpy(d_input, input_image.ptr(), size_input, cudaMemcpyHostToDevice);
     cudaEventCreate(&start);
     cudaEventCreate(&end);
 
-    
-    int width_input = input_image.cols;
-    int height_input = input_image.rows;
-    int channels_input = input_image.channels();
-    int width_output = output_image.cols;
-    int height_output = output_image.rows;
-    int channels_output = output_image.channels();
+    unsigned char *input_image_pointer, *output_image_pointer;
+    cudaMalloc<unsigned char>(&input_image_pointer, size_input);
+    cudaMalloc<unsigned char>(&output_image_pointer, size_output);
 
+    cudaMemcpy(input_image_pointer, input_image.ptr(), size_input, cudaMemcpyHostToDevice);
+   
     cudaEventRecord(start, NULL);
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(width_output / threadsPerBlock.x, height_output / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
-            nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, CHANNELS, width_output, height_output, CHANNELS);
+        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows, CHANNELS, output_image.cols, output_image.rows, CHANNELS);
     }
+
     cudaEventRecord(end, NULL);
     cudaEventSynchronize(end);
   
@@ -104,12 +97,12 @@ int main(int argc, char* argv[]) {
     float secPerMatrixMul = msecTotal / (ITERATIONS * 1.0f);
     printf("%.8f",secPerMatrixMul);
   
-    cudaMemcpy(output_image.ptr(), d_output, size_output, cudaMemcpyDeviceToHost);
+    cudaMemcpy(output_image.ptr(), output_image_pointer, size_output, cudaMemcpyDeviceToHost);
 
     imwrite(dst, output_image);
 
-    cudaFree(d_input);
-    cudaFree(d_output);
+    cudaFree(input_image_pointer);
+    cudaFree(output_image_pointer);
 
     return 0;
 }
