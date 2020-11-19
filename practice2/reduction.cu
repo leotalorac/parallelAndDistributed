@@ -30,12 +30,12 @@ get_timestamp ()
 }
 #endif
 
-Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3); 
-Mat input_image;
+Mat outImg(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3); 
+Mat originalImg;
 
 __global__ void nearest_neighbour_scaling(
-    unsigned char *input_image, 
-    unsigned char *output_image,
+    unsigned char *originalImg, 
+    unsigned char *outImg,
     int width_input, 
     int height_input,
     int channels_input,
@@ -56,7 +56,7 @@ __global__ void nearest_neighbour_scaling(
         py = ceil(yIndex * y_ratio);
         px = ceil(xIndex * x_ratio);
         for (int channel = 0; channel < CHANNELS; channel++){
-            *(output_image + (yIndex * output_width_step + xIndex * channels_output + channel)) =  *(input_image + (py * input_width_step + px * channels_input + channel));
+            *(outImg + (yIndex * output_width_step + xIndex * channels_output + channel)) =  *(originalImg + (py * input_width_step + px * channels_input + channel));
         }
     }
 }
@@ -65,32 +65,35 @@ __global__ void nearest_neighbour_scaling(
 
 int main(int argc, char* argv[]) {
     
+    //Get the source image path, out path and number of thread
     const string src = argv[1];
     const string dst = argv[2];
     const int threads = atoi(argv[3]);
 
-    input_image = imread(src);
-    
+    //src image
+    originalImg = imread(src);
+
     cudaEvent_t start, end;
     
-    const int input_bytes = input_image.cols * input_image.rows * input_image.channels() * sizeof(unsigned char);
-    const int output_bytes = output_image.cols * output_image.rows * output_image.channels() * sizeof(unsigned char);
+    const int size = sizeof(unsigned char) * originalImg.cols * originalImg.rows * CHANNELS;
+    printf("%n",outImg.cols );
+    const int output_bytes = sizeof(unsigned char) * outImg.cols * outImg.rows * CHANNELS; 
 
     unsigned char *d_input, *d_output;
-    cudaMalloc<unsigned char>(&d_input, input_bytes);
+    cudaMalloc<unsigned char>(&d_input, size);
     cudaMalloc<unsigned char>(&d_output, output_bytes);
 
-    cudaMemcpy(d_input, input_image.ptr(), input_bytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_input, originalImg.ptr(), size, cudaMemcpyHostToDevice);
     cudaEventCreate(&start);
     cudaEventCreate(&end);
 
     
-    int width_input = input_image.cols;
-    int height_input = input_image.rows;
-    int channels_input = input_image.channels();
-    int width_output = output_image.cols;
-    int height_output = output_image.rows;
-    int channels_output = output_image.channels();
+    int width_input = originalImg.cols;
+    int height_input = originalImg.rows;
+    int channels_input = originalImg.channels();
+    int width_output = outImg.cols;
+    int height_output = outImg.rows;
+    int channels_output = outImg.channels();
 
     cudaEventRecord(start, NULL);
     const dim3 threadsPerBlock(threads, threads);
@@ -106,9 +109,9 @@ int main(int argc, char* argv[]) {
     float secPerMatrixMul = msecTotal / (ITERATIONS * 1.0f);
     printf("%.8f",secPerMatrixMul);
   
-    cudaMemcpy(output_image.ptr(), d_output, output_bytes, cudaMemcpyDeviceToHost);
+    cudaMemcpy(outImg.ptr(), d_output, output_bytes, cudaMemcpyDeviceToHost);
 
-    imwrite(dst, output_image);
+    imwrite(dst, outImg);
 
     cudaFree(d_input);
     cudaFree(d_output);
