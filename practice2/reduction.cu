@@ -30,7 +30,8 @@ get_timestamp ()
 }
 #endif
 
-
+Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3); 
+Mat input_image;
 
 __global__ void nearest_neighbour_scaling(
     unsigned char *input_image, 
@@ -64,15 +65,11 @@ __global__ void nearest_neighbour_scaling(
 
 int main(int argc, char* argv[]) {
     
-    const string source_image_path = argv[1];
-    const string result_image_path = argv[2];
+    const string src = argv[1];
+    const string dst = argv[2];
     const int threads = atoi(argv[3]);
 
-
-    Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3); 
-    Mat input_image = imread(source_image_path);
-    timestamp_t start_a, end_a;
-    double avg;
+    input_image = imread(src);
     
     cudaEvent_t start, end;
     
@@ -96,7 +93,6 @@ int main(int argc, char* argv[]) {
     int channels_output = output_image.channels();
 
     cudaEventRecord(start, NULL);
-    start_a = get_timestamp();
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(width_output / threadsPerBlock.x, height_output / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
@@ -109,11 +105,10 @@ int main(int argc, char* argv[]) {
     cudaEventElapsedTime(&msecTotal, start, end);
     float secPerMatrixMul = msecTotal / (ITERATIONS * 1.0f);
     printf("%.8f",secPerMatrixMul);
-
   
     cudaMemcpy(output_image.ptr(), d_output, output_bytes, cudaMemcpyDeviceToHost);
 
-    imwrite(result_image_path, output_image);
+    imwrite(dst, output_image);
 
     cudaFree(d_input);
     cudaFree(d_output);
