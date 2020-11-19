@@ -70,17 +70,16 @@ int main(int argc, char* argv[]) {
     const int threads = atoi(argv[3]);
 
     input_image = imread(src);
-    
+    const int size_input = input_image.cols * input_image.rows * input_image.channels() * sizeof(unsigned char);
+    const int size_output = output_image.cols * output_image.rows * output_image.channels() * sizeof(unsigned char);
+
     cudaEvent_t start, end;
-    
-    const int input_bytes = input_image.cols * input_image.rows * input_image.channels() * sizeof(unsigned char);
-    const int output_bytes = output_image.cols * output_image.rows * output_image.channels() * sizeof(unsigned char);
 
     unsigned char *d_input, *d_output;
-    cudaMalloc<unsigned char>(&d_input, input_bytes);
-    cudaMalloc<unsigned char>(&d_output, output_bytes);
+    cudaMalloc<unsigned char>(&d_input, size_input);
+    cudaMalloc<unsigned char>(&d_output, size_output);
 
-    cudaMemcpy(d_input, input_image.ptr(), input_bytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_input, input_image.ptr(), size_input, cudaMemcpyHostToDevice);
     cudaEventCreate(&start);
     cudaEventCreate(&end);
 
@@ -106,7 +105,7 @@ int main(int argc, char* argv[]) {
     float secPerMatrixMul = msecTotal / (ITERATIONS * 1.0f);
     printf("%.8f",secPerMatrixMul);
   
-    cudaMemcpy(output_image.ptr(), d_output, output_bytes, cudaMemcpyDeviceToHost);
+    cudaMemcpy(output_image.ptr(), d_output, size_output, cudaMemcpyDeviceToHost);
 
     imwrite(dst, output_image);
 
