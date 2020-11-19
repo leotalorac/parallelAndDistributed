@@ -102,18 +102,13 @@ int main(int argc, char* argv[]) {
     for(int i = 0; i < ITERATIONS; i++){
             nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(d_input, d_output, width_input, height_input, CHANNELS, width_output, height_output, CHANNELS);
     }
-    end_a = get_timestamp();
     cudaEventRecord(end, NULL);
     cudaEventSynchronize(end);
-    avg = (end_a - start_a);
-    printf("%f\n",avg/(double)1000);
+  
     float msecTotal = 0.0f;
     cudaEventElapsedTime(&msecTotal, start, end);
     float secPerMatrixMul = msecTotal / (ITERATIONS * 1.0f);
-    printf(
-        "Time= %.8f ms",
-        secPerMatrixMul
-    );
+    printf("%.8f",secPerMatrixMul);
 
   
     cudaMemcpy(output_image.ptr(), d_output, output_bytes, cudaMemcpyDeviceToHost);
