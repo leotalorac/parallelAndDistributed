@@ -118,6 +118,5 @@ int main(int argc, char* argv[]) {
     cudaFree(d_input);
     cudaFree(d_output);
 
-    printf("Done\n");
     return 0;
 }
