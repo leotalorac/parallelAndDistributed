@@ -70,8 +70,8 @@ int main(int argc, char* argv[]) {
     const int threads = atoi(argv[3]);
 
     input_image = imread(src);
-    const int size_input = input_image.cols * input_image.rows * CHANNELS * sizeof(unsigned char);
-    const int size_output = output_image.cols * output_image.rows * CHANNELS * sizeof(unsigned char);
+    const int size_input = sizeof(unsigned char) * input_image.cols * input_image.rows * CHANNELS; 
+    const int size_output = sizeof(unsigned char) *output_image.cols * output_image.rows * CHANNELS;
     cudaEvent_t start, end;
 
     unsigned char *d_input, *d_output;
