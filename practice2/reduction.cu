@@ -88,10 +88,9 @@ int main(int argc, char* argv[]) {
     cudaEventRecord(start, NULL);
 
    
-    const dim3 threadsPerBlock(threads, threads);
-    const dim3 numBlocks(output_image.cols / threadsPerBlock.x, output_image.rows / threadsPerBlock.y);
+    const dim3 numBlocks(output_image.cols / threads, output_image.rows / threads);
     for(int i = 0; i < ITERATIONS; i++){
-        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows, CHANNELS, output_image.cols, output_image.rows, CHANNELS);
+        nearest_neighbour_scaling<<<numBlocks, threads>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows, CHANNELS, output_image.cols, output_image.rows, CHANNELS);
     }
 
     cudaEventRecord(end, NULL);
