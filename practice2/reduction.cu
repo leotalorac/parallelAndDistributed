@@ -88,18 +88,21 @@ int main(int argc, char* argv[]) {
     cudaEventRecord(start, NULL);
 
    
-    const dim3 numBlocks(output_image.cols / threads, output_image.rows / threads);
+    const dim3 threadsPerBlock(threads, threads);
+    const dim3 numBlocks(output_image.cols / threadsPerBlock.x, output_image.rows / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
-        nearest_neighbour_scaling<<<numBlocks, threads>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows, CHANNELS, output_image.cols, output_image.rows, CHANNELS);
+        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows, CHANNELS, output_image.cols, output_image.rows, CHANNELS);
     }
 
+    /*Stop Time recording*/
     cudaEventRecord(end, NULL);
     cudaEventSynchronize(end);
-  
-    float msecTotal = 0.0f;
-    cudaEventElapsedTime(&msecTotal, start, end);
-    float secPerMatrixMul = msecTotal / (ITERATIONS * 1.0f);
-    printf("%.8f",secPerMatrixMul);
+    
+    /*Calculate Time*/
+    float time = 0.0f;
+    cudaEventElapsedTime(&time, start, end);
+    float totalTime = time / (ITERATIONS * 1.0f);
+    printf("%.8f",totalTime);
   
     cudaMemcpy(output_image.ptr(), output_image_pointer, size_output, cudaMemcpyDeviceToHost);
 
