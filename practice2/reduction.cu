@@ -32,7 +32,7 @@ get_timestamp ()
 Mat output_image(HEIGHT, WIDTH, CV_8UC3); 
 Mat input_image;
 
-__global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned char *output_image,int width_input, int height_input,int width_output, int height_output) {
+__global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned char *output_image,int width_input, int height_input) {
     const float x_ratio = (width_input + 0.0) / WIDTH;
     const float y_ratio = (height_input + 0.0) / HEIGHT;
 
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(output_image.cols / threadsPerBlock.x, output_image.rows / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
-        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows, output_image.cols, output_image.rows);
+        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows);
     }
    
 
