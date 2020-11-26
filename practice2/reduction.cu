@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 
     /*Allocate Space*/
     const int size_input = sizeof(unsigned char) * input_image.cols * input_image.rows * CHANNELS; 
-    const int size_output = sizeof(unsigned char) *output_image.cols * output_image.rows * CHANNELS;
+    const int size_output = sizeof(unsigned char) * WIDTH * HEIGHT * CHANNELS;
     unsigned char *input_image_pointer, *output_image_pointer;
 
     cudaMalloc<unsigned char>(&input_image_pointer, size_input);
