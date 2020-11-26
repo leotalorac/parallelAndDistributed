@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
     end1 = get_timestamp();
     avg1= (end1 - start1)/(double)ITERATIONS;
 
-    printf("%f\n", avg/(double)1000);
+    printf("%f\n", avg1/(double)1000);
 
     /*Stop Time recording*/
     cudaEventRecord(end, NULL);
