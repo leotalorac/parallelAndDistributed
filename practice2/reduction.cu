@@ -48,21 +48,19 @@ __global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned c
     src_dim.y_ratio = ((float)src_dim.height/HEIGHT);
     src_dim.x_ratio = ((float)src_dim.width/WIDTH);
 
-    const float x_ratio = (width_input + 0.0) / WIDTH;
-    const float y_ratio = (height_input + 0.0) / HEIGHT;
 
 	const int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
     const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 
-    int px = 0, py = 0; 
+    int row,col = 0;
     const int input_width_step = width_input * CHANNELS;
     const int output_width_step = WIDTH * CHANNELS;
 
     if ((xIndex < WIDTH) && (yIndex < HEIGHT)){
-        py = ceil(yIndex *  src_dim.y_ratio);
-        px = ceil(xIndex * src_dim.x_ratio);
+        row = ceil(yIndex *  src_dim.y_ratio);
+        col = ceil(xIndex * src_dim.x_ratio);
         for (int channel = 0; channel < CHANNELS; channel++){
-            *(output_image + (yIndex * output_width_step + xIndex * CHANNELS + channel)) =  *(input_image + (py * input_width_step + px * CHANNELS + channel));
+            *(output_image + (yIndex * output_width_step + xIndex * CHANNELS + channel)) =  *(input_image + (row * input_width_step + col * CHANNELS + channel));
         }
     }
 }
