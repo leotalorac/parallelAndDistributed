@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
    
 
     /*Allocate Space*/
-    const int size_input = sizeof(unsigned char) * originalImg.cols * originalImg.rows * CHANNELS; 
+    const int size_input = sizeof(unsigned char) *  originalImg.size().height *  originalImg.size().width * CHANNELS; 
     const int size_output = sizeof(unsigned char) * WIDTH * HEIGHT * CHANNELS;
     unsigned char *input_image_pointer, *output_image_pointer;
 
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(outImg.cols / threadsPerBlock.x, outImg.rows / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
-        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, originalImg.cols, originalImg.rows);
+        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, originalImg.size().width, originalImg.size().height);
     }
    
 
