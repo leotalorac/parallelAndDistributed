@@ -8,8 +8,8 @@
 using namespace cv;
 using namespace std;
 
-#define HEIGHT 720
-#define WIDTH 480
+#define HEIGHT 480
+#define WIDTH 720
 #define CHANNELS 3
 #define ITERATIONS 20
 
