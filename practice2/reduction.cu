@@ -29,7 +29,7 @@ get_timestamp ()
 }
 #endif
 
-Mat output_image(HEIGHT, WIDTH, CV_8UC3); 
+Mat outImg(HEIGHT, WIDTH, CV_8UC3); 
 Mat input_image;
 
 __global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned char *output_image,int width_input, int height_input) {
@@ -97,9 +97,9 @@ int main(int argc, char* argv[]) {
     float totalTime = time / (ITERATIONS * 1.0f);
     printf("%.8f",totalTime);
   
-    cudaMemcpy(output_image.ptr(), output_image_pointer, size_output, cudaMemcpyDeviceToHost);
+    cudaMemcpy(outImg.ptr(), output_image_pointer, size_output, cudaMemcpyDeviceToHost);
 
-    imwrite(dst, output_image);
+    imwrite(dst, outImg);
 
     cudaFree(input_image_pointer);
     cudaFree(output_image_pointer);
