@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
 
    
     const dim3 threadsPerBlock(threads, threads);
-    const dim3 numBlocks(outImg.cols / threadsPerBlock.x, outImg.rows / threadsPerBlock.y);
+    const dim3 numBlocks(WIDTH / threadsPerBlock.x, HEIGHT / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
         nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, originalImg.size().width, originalImg.size().height);
     }
