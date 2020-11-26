@@ -53,6 +53,7 @@ __global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned c
     const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 
     int row,col = 0;
+    int b;
     const int input_width_step = width_input * CHANNELS;
     const int output_width_step = WIDTH * CHANNELS;
 
