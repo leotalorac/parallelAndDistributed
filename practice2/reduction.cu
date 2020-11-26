@@ -33,6 +33,21 @@ Mat outImg(HEIGHT, WIDTH, CV_8UC3);
 Mat originalImg;
 
 __global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned char *output_image,int width_input, int height_input) {
+    
+    struct dimension
+    {
+        int height;
+        int width;
+        float x_ratio;
+        float y_ratio;
+    } src_dim;
+
+
+    src_dim.height = height_input;
+    src_dim.width = width_input;
+    src_dim.y_ratio = ((float)src_dim.height/HEIGHT);
+    src_dim.x_ratio = ((float)src_dim.width/WIDTH);
+
     const float x_ratio = (width_input + 0.0) / WIDTH;
     const float y_ratio = (height_input + 0.0) / HEIGHT;
 
@@ -44,8 +59,8 @@ __global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned c
     const int output_width_step = WIDTH * CHANNELS;
 
     if ((xIndex < WIDTH) && (yIndex < HEIGHT)){
-        py = ceil(yIndex * y_ratio);
-        px = ceil(xIndex * x_ratio);
+        py = ceil(yIndex *  src_dim.y_ratio);
+        px = ceil(xIndex * src_dim.x_ratio);
         for (int channel = 0; channel < CHANNELS; channel++){
             *(output_image + (yIndex * output_width_step + xIndex * CHANNELS + channel)) =  *(input_image + (py * input_width_step + px * CHANNELS + channel));
         }
