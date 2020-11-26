@@ -1,8 +1,7 @@
-// #include <stdio.h>
-// For the CUDA runtime routines (prefixed with "cuda_")
 #include <cuda_runtime.h>
 #include <helper_cuda.h>
 #include <opencv2/opencv.hpp>
+#include <sys/time.h>
 #include <bits/stdc++.h>
 #include <sys/time.h>
 
@@ -33,7 +32,7 @@ get_timestamp ()
 Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3); 
 Mat input_image;
 
-__global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned char *output_image,int width_input, int height_input,int channels_input,int width_output, int height_output,int channels_output) {
+__global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned char *output_image,int width_input, int height_input,int width_output, int height_output) {
     const float x_ratio = (width_input + 0.0) / width_output;
     const float y_ratio = (height_input + 0.0) / height_output;
 
@@ -83,7 +82,7 @@ int main(int argc, char* argv[]) {
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(output_image.cols / threadsPerBlock.x, output_image.rows / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
-        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows, CHANNELS, output_image.cols, output_image.rows, CHANNELS);
+        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows, output_image.cols, output_image.rows);
     }
 
     /*Stop Time recording*/
