@@ -33,15 +33,7 @@ get_timestamp ()
 Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3); 
 Mat input_image;
 
-__global__ void nearest_neighbour_scaling(
-    unsigned char *input_image, 
-    unsigned char *output_image,
-    int width_input, 
-    int height_input,
-    int channels_input,
-    int width_output, 
-    int height_output,
-    int channels_output) {
+__global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned char *output_image,int width_input, int height_input,int channels_input,int width_output, int height_output,int channels_output) {
     const float x_ratio = (width_input + 0.0) / width_output;
     const float y_ratio = (height_input + 0.0) / height_output;
 
@@ -49,14 +41,14 @@ __global__ void nearest_neighbour_scaling(
     const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 
     int px = 0, py = 0; 
-    const int input_width_step = width_input * channels_input;
-    const int output_width_step = width_output * channels_output;
+    const int input_width_step = width_input * CHANNELS;
+    const int output_width_step = width_output * CHANNELS;
 
     if ((xIndex < width_output) && (yIndex < height_output)){
         py = ceil(yIndex * y_ratio);
         px = ceil(xIndex * x_ratio);
         for (int channel = 0; channel < CHANNELS; channel++){
-            *(output_image + (yIndex * output_width_step + xIndex * channels_output + channel)) =  *(input_image + (py * input_width_step + px * channels_input + channel));
+            *(output_image + (yIndex * output_width_step + xIndex * CHANNELS + channel)) =  *(input_image + (py * input_width_step + px * CHANNELS + channel));
         }
     }
 }
