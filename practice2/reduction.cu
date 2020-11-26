@@ -8,8 +8,8 @@
 using namespace cv;
 using namespace std;
 
-#define RESULT_WIDTH 720
-#define RESULT_HEIGHT 480
+#define HEIGHT 720
+#define WIDTH 480
 #define CHANNELS 3
 #define ITERATIONS 20
 
@@ -29,21 +29,21 @@ get_timestamp ()
 }
 #endif
 
-Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3); 
+Mat output_image(HEIGHT, WIDTH, CV_8UC3); 
 Mat input_image;
 
 __global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned char *output_image,int width_input, int height_input,int width_output, int height_output) {
-    const float x_ratio = (width_input + 0.0) / width_output;
-    const float y_ratio = (height_input + 0.0) / height_output;
+    const float x_ratio = (width_input + 0.0) / WIDTH;
+    const float y_ratio = (height_input + 0.0) / HEIGHT;
 
 	const int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
     const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 
     int px = 0, py = 0; 
     const int input_width_step = width_input * CHANNELS;
-    const int output_width_step = width_output * CHANNELS;
+    const int output_width_step = WIDTH * CHANNELS;
 
-    if ((xIndex < width_output) && (yIndex < height_output)){
+    if ((xIndex < WIDTH) && (yIndex < HEIGHT)){
         py = ceil(yIndex * y_ratio);
         px = ceil(xIndex * x_ratio);
         for (int channel = 0; channel < CHANNELS; channel++){
@@ -62,8 +62,7 @@ int main(int argc, char* argv[]) {
     const int threads = atoi(argv[3]);
 
     input_image = imread(src);
-    timestamp_t start1, end1;
-    double avg1;
+   
 
     /*Allocate Space*/
     const int size_input = sizeof(unsigned char) * input_image.cols * input_image.rows * CHANNELS; 
@@ -83,14 +82,10 @@ int main(int argc, char* argv[]) {
    
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(output_image.cols / threadsPerBlock.x, output_image.rows / threadsPerBlock.y);
-    start1 = get_timestamp();
     for(int i = 0; i < ITERATIONS; i++){
         nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows, output_image.cols, output_image.rows);
     }
-    end1 = get_timestamp();
-    avg1= (end1 - start1)/(double)ITERATIONS;
-
-    printf("%f\n", avg1/(double)1000);
+   
 
     /*Stop Time recording*/
     cudaEventRecord(end, NULL);
