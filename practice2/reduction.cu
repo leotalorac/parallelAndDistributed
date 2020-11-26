@@ -62,6 +62,8 @@ int main(int argc, char* argv[]) {
     const int threads = atoi(argv[3]);
 
     input_image = imread(src);
+    timestamp_t start, end;
+    double avg;
 
     /*Allocate Space*/
     const int size_input = sizeof(unsigned char) * input_image.cols * input_image.rows * CHANNELS; 
@@ -81,9 +83,14 @@ int main(int argc, char* argv[]) {
    
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(output_image.cols / threadsPerBlock.x, output_image.rows / threadsPerBlock.y);
+    start = get_timestamp();
     for(int i = 0; i < ITERATIONS; i++){
         nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows, output_image.cols, output_image.rows);
     }
+    end = get_timestamp();
+    avg = (end - start)/(double)ITERATIONS;
+
+    printf("%f\n", avg/(double)1000);
 
     /*Stop Time recording*/
     cudaEventRecord(end, NULL);
