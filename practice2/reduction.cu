@@ -30,7 +30,7 @@ get_timestamp ()
 #endif
 
 Mat outImg(HEIGHT, WIDTH, CV_8UC3); 
-Mat input_image;
+Mat originalImg;
 
 __global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned char *output_image,int width_input, int height_input) {
     const float x_ratio = (width_input + 0.0) / WIDTH;
@@ -61,17 +61,17 @@ int main(int argc, char* argv[]) {
     const string dst = argv[2];
     const int threads = atoi(argv[3]);
 
-    input_image = imread(src);
+    originalImg = imread(src);
    
 
     /*Allocate Space*/
-    const int size_input = sizeof(unsigned char) * input_image.cols * input_image.rows * CHANNELS; 
+    const int size_input = sizeof(unsigned char) * originalImg.cols * originalImg.rows * CHANNELS; 
     const int size_output = sizeof(unsigned char) * WIDTH * HEIGHT * CHANNELS;
     unsigned char *input_image_pointer, *output_image_pointer;
 
     cudaMalloc<unsigned char>(&input_image_pointer, size_input);
     cudaMalloc<unsigned char>(&output_image_pointer, size_output);
-    cudaMemcpy(input_image_pointer, input_image.ptr(), size_input, cudaMemcpyHostToDevice);
+    cudaMemcpy(input_image_pointer, originalImg.ptr(), size_input, cudaMemcpyHostToDevice);
 
     /*Time Recording*/
     cudaEvent_t start, end;
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     const dim3 threadsPerBlock(threads, threads);
     const dim3 numBlocks(outImg.cols / threadsPerBlock.x, outImg.rows / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
-        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows);
+        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, originalImg.cols, originalImg.rows);
     }
    
 
