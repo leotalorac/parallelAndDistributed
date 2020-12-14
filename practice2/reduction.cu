@@ -8,8 +8,8 @@
 using namespace cv;
 using namespace std;
 
-#define RESULT_WIDTH 720
-#define RESULT_HEIGHT 480
+#define HEIGHT 480
+#define WIDTH 720
 #define CHANNELS 3
 #define ITERATIONS 20
 
@@ -29,25 +29,39 @@ get_timestamp ()
 }
 #endif
 
-Mat output_image(RESULT_HEIGHT, RESULT_WIDTH, CV_8UC3); 
-Mat input_image;
+Mat outImg(HEIGHT, WIDTH, CV_8UC3); 
+Mat originalImg;
 
-__global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned char *output_image,int width_input, int height_input,int width_output, int height_output) {
-    const float x_ratio = (width_input + 0.0) / width_output;
-    const float y_ratio = (height_input + 0.0) / height_output;
+__global__ void nearest_neighbour_scaling(unsigned char *input_image, unsigned char *output_image,int width_input, int height_input) {
+    
+    struct dimension
+    {
+        int height;
+        int width;
+        float x_ratio;
+        float y_ratio;
+    } src_dim;
+
+
+    src_dim.height = height_input;
+    src_dim.width = width_input;
+    src_dim.y_ratio = ((float)src_dim.height/HEIGHT);
+    src_dim.x_ratio = ((float)src_dim.width/WIDTH);
+
 
 	const int xIndex = blockIdx.x * blockDim.x + threadIdx.x;
     const int yIndex = blockIdx.y * blockDim.y + threadIdx.y;
 
-    int px = 0, py = 0; 
+    int row,col = 0;
+    int b;
     const int input_width_step = width_input * CHANNELS;
-    const int output_width_step = width_output * CHANNELS;
+    const int output_width_step = WIDTH * CHANNELS;
 
-    if ((xIndex < width_output) && (yIndex < height_output)){
-        py = ceil(yIndex * y_ratio);
-        px = ceil(xIndex * x_ratio);
+    if ((xIndex < WIDTH) && (yIndex < HEIGHT)){
+        row = ceil(yIndex *  src_dim.y_ratio);
+        col = ceil(xIndex * src_dim.x_ratio);
         for (int channel = 0; channel < CHANNELS; channel++){
-            *(output_image + (yIndex * output_width_step + xIndex * CHANNELS + channel)) =  *(input_image + (py * input_width_step + px * CHANNELS + channel));
+            *(output_image + (yIndex * output_width_step + xIndex * CHANNELS + channel)) =  *(input_image + (row * input_width_step + col * CHANNELS + channel));
         }
     }
 }
@@ -61,16 +75,17 @@ int main(int argc, char* argv[]) {
     const string dst = argv[2];
     const int threads = atoi(argv[3]);
 
-    input_image = imread(src);
+    originalImg = imread(src);
+   
 
     /*Allocate Space*/
-    const int size_input = sizeof(unsigned char) * input_image.cols * input_image.rows * CHANNELS; 
-    const int size_output = sizeof(unsigned char) *output_image.cols * output_image.rows * CHANNELS;
+    const int size_input = sizeof(unsigned char) *  originalImg.size().height *  originalImg.size().width * CHANNELS; 
+    const int size_output = sizeof(unsigned char) * WIDTH * HEIGHT * CHANNELS;
     unsigned char *input_image_pointer, *output_image_pointer;
 
     cudaMalloc<unsigned char>(&input_image_pointer, size_input);
     cudaMalloc<unsigned char>(&output_image_pointer, size_output);
-    cudaMemcpy(input_image_pointer, input_image.ptr(), size_input, cudaMemcpyHostToDevice);
+    cudaMemcpy(input_image_pointer, originalImg.ptr(), size_input, cudaMemcpyHostToDevice);
 
     /*Time Recording*/
     cudaEvent_t start, end;
@@ -80,10 +95,11 @@ int main(int argc, char* argv[]) {
 
    
     const dim3 threadsPerBlock(threads, threads);
-    const dim3 numBlocks(output_image.cols / threadsPerBlock.x, output_image.rows / threadsPerBlock.y);
+    const dim3 numBlocks(WIDTH / threadsPerBlock.x, HEIGHT / threadsPerBlock.y);
     for(int i = 0; i < ITERATIONS; i++){
-        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, input_image.cols, input_image.rows, output_image.cols, output_image.rows);
+        nearest_neighbour_scaling<<<numBlocks, threadsPerBlock>>>(input_image_pointer, output_image_pointer, originalImg.size().width, originalImg.size().height);
     }
+   
 
     /*Stop Time recording*/
     cudaEventRecord(end, NULL);
@@ -95,9 +111,9 @@ int main(int argc, char* argv[]) {
     float totalTime = time / (ITERATIONS * 1.0f);
     printf("%.8f",totalTime);
   
-    cudaMemcpy(output_image.ptr(), output_image_pointer, size_output, cudaMemcpyDeviceToHost);
+    cudaMemcpy(outImg.ptr(), output_image_pointer, size_output, cudaMemcpyDeviceToHost);
 
-    imwrite(dst, output_image);
+    imwrite(dst, outImg);
 
     cudaFree(input_image_pointer);
     cudaFree(output_image_pointer);
